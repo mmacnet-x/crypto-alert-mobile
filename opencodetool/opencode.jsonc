@@ -1,0 +1,5 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  // 파일 수정 후 자동 포맷 활성화 (Python은 ruff가 내장 지원됨)
+  "formatter": true,
+}

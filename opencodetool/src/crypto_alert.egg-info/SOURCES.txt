@@ -1,0 +1,11 @@
+README.md
+pyproject.toml
+src/crypto_alert/__init__.py
+src/crypto_alert/main.py
+src/crypto_alert.egg-info/PKG-INFO
+src/crypto_alert.egg-info/SOURCES.txt
+src/crypto_alert.egg-info/dependency_links.txt
+src/crypto_alert.egg-info/entry_points.txt
+src/crypto_alert.egg-info/requires.txt
+src/crypto_alert.egg-info/top_level.txt
+tests/test_smoke.py

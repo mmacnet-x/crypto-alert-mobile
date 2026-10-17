@@ -1,0 +1,42 @@
+{
+  "upbit": [
+    "BTC",
+    "ETH",
+    "XRP",
+    "XLM",
+    "ADA",
+    "WLD",
+    "SOL",
+    "SUI",
+    "SHIB",
+    "BTT",
+    "MED",
+    "BLUR",
+    "AVAX",
+    "TRX",
+    "LINK",
+    "APT",
+    "HBAR",
+    "JTO",
+    "BCH",
+    "FIL",
+    "SEI",
+    "POL",
+    "DOT",
+    "ENS",
+    "XEC",
+    "ICX"
+  ],
+  "binance": [
+    "BTC/USDT",
+    "ETH/USDT",
+    "SOL/USDT",
+    "XRP/USDT",
+    "XLM/USDT",
+    "WLD/USDT",
+    "BTTC/USDT"
+  ],
+  "okx": [
+    "PI/USDT"
+  ]
+}

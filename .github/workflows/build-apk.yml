@@ -1,0 +1,42 @@
+name: Build Android APK (crypto-alert)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Release APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: actions/setup-flutter@v3
+        with:
+          channel: 'stable'
+
+      - name: Get Dependencies
+        working-directory: crypto_alert_mobile
+        run: flutter pub get
+
+      - name: Build Android Release APK
+        working-directory: crypto_alert_mobile
+        run: flutter build apk --release
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto-alert-release-apk
+          path: crypto_alert_mobile/build/app/outputs/flutter-apk/app-release.apk

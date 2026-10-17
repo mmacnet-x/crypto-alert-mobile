@@ -1,0 +1,15 @@
+[
+  {
+    "id": "49916b52",
+    "exchange": "upbit",
+    "symbol": "MED/KRW",
+    "interval": "1d",
+    "condition": "bb_breakout_up",
+    "params": {
+      "period": 20,
+      "mult": 2.0
+    },
+    "enabled": true,
+    "cooldown_sec": 6000
+  }
+]

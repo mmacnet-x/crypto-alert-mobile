@@ -1,0 +1,2 @@
+[console_scripts]
+crypto-alert = crypto_alert.main:main

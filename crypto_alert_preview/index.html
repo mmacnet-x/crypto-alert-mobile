@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>crypto-alert Mobile (Android APK Preview)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #131722;
+      --surface: #1e222d;
+      --surface-light: #2a2e39;
+      --border: #363a45;
+      --up: #c84a31;
+      --down: #1261c4;
+      --text: #d1d4dc;
+      --text-muted: #787b86;
+      --primary: #2962ff;
+      --primary-hover: #1e53e5;
+      --ma-short: #ff9800;
+      --ma-med: #2196f3;
+      --ma-long: #9c27b0;
+      --bb: #00bcd4;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      background: #0b0e14;
+      color: var(--text);
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+
+    /* 스마트폰 목업 프레임 */
+    .phone-container {
+      width: 100%;
+      max-width: 420px;
+      height: 840px;
+      background: var(--bg);
+      border-radius: 40px;
+      border: 8px solid #232733;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.08);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* 상단 상태바 */
+    .status-bar {
+      height: 28px;
+      background: var(--surface);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* 앱 헤더 */
+    .app-header {
+      height: 52px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 16px;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .app-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .fg-badge {
+      font-size: 10px;
+      padding: 3px 7px;
+      border-radius: 12px;
+      background: rgba(39, 174, 96, 0.15);
+      border: 1px solid #27ae60;
+      color: #2ecc71;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .fg-badge::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #2ecc71;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.3; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.2); }
+      100% { opacity: 0.3; transform: scale(0.8); }
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    /* 메인 뷰 컨테이너 */
+    .view-content {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .tab-view {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .tab-view.active {
+      display: flex;
+    }
+
+    /* 1. 차트 탭 */
+    .chart-controls {
+      background: var(--surface);
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .selector-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    select {
+      background: var(--surface-light);
+      color: #fff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-weight: 600;
+      outline: none;
+    }
+
+    .price-summary {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .current-price {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .price-change {
+      font-size: 13px;
+      font-weight: 600;
+      margin-left: 6px;
+    }
+
+    .volume-text {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .interval-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 6px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .interval-group, .indicator-group {
+      display: flex;
+      gap: 4px;
+    }
+
+    .pill-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 4px;
+      padding: 3px 7px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .pill-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    /* 캔버스 차트 영역 */
+    .chart-canvas-container {
+      flex: 1;
+      position: relative;
+      background: var(--bg);
+      touch-action: none;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* 2. 알림 규칙 탭 */
+    .rules-header {
+      display: flex;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .subtab-btn {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+
+    .subtab-btn.active {
+      color: #fff;
+      border-bottom-color: var(--primary);
+    }
+
+    .rules-list {
+      flex: 1;
+      padding: 12px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .rule-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .rule-info {
+      flex: 1;
+    }
+
+    .rule-badge {
+      display: inline-block;
+      font-size: 9px;
+      padding: 2px 5px;
+      background: var(--surface-light);
+      border-radius: 4px;
+      font-weight: 700;
+      margin-right: 4px;
+    }
+
+    .rule-symbol {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .rule-cond {
+      font-size: 13px;
+      color: var(--primary);
+      font-weight: 600;
+      margin: 3px 0;
+    }
+
+    .rule-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 38px;
+      height: 22px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: var(--surface-light);
+      transition: .3s;
+      border-radius: 22px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px; width: 16px;
+      left: 3px; bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--primary);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(16px);
+    }
+
+    /* 플로팅 액션 버튼 */
+    .fab {
+      position: absolute;
+      right: 18px;
+      bottom: 68px;
+      width: 48px;
+      height: 48px;
+      border-radius: 24px;
+      background: var(--primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      border: none;
+      box-shadow: 0 6px 16px rgba(41, 98, 255, 0.4);
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    /* 3. 보유종목 탭 */
+    .portfolio-hero {
+      background: linear-gradient(135deg, #1e222d 0%, #252b3b 100%);
+      margin: 12px;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .hero-label {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .hero-val {
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+      margin: 4px 0 6px 0;
+    }
+
+    .hero-pnl {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* 4. 시가총액 탭 */
+    .rank-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .rank-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .rank-num {
+      width: 24px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .rank-top {
+      color: #f1c40f;
+    }
+
+    .rank-info {
+      flex: 1;
+      margin-left: 8px;
+    }
+
+    .rank-sym {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .rank-cap {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .rank-price-col {
+      text-align: right;
+    }
+
+    .rank-price {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .rank-chg {
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* 하단 네비게이션 바 */
+    .bottom-nav {
+      height: 56px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 20;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 6px;
+      border: none;
+      background: none;
+    }
+
+    .nav-item.active {
+      color: var(--primary);
+    }
+
+    .nav-icon {
+      font-size: 18px;
+    }
+
+    /* 토스트 알림 팝업 */
+    .toast-popup {
+      position: absolute;
+      top: 36px;
+      left: 14px;
+      right: 14px;
+      background: rgba(30, 34, 45, 0.95);
+      border: 1px solid var(--primary);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      transform: translateY(-80px);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 100;
+    }
+
+    .toast-popup.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .toast-text {
+      flex: 1;
+      font-size: 12px;
+    }
+
+    .toast-title {
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* 모달 */
+    .modal-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(2px);
+      display: none;
+      align-items: flex-end;
+      z-index: 50;
+    }
+
+    .modal-sheet {
+      background: var(--surface);
+      width: 100%;
+      border-radius: 20px 20px 0 0;
+      padding: 20px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .modal-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group label {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .form-group input, .form-group select {
+      background: var(--surface-light);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 스마트폰 프레임 -->
+  <div class="phone-container">
+
+    <!-- 상단 시스템 상태바 -->
+    <div class="status-bar">
+      <span id="clock">12:00</span>
+      <span>5G 📶 100% 🔋</span>
+    </div>
+
+    <!-- 앱 헤더 -->
+    <header class="app-header">
+      <div class="logo-area">
+        <span style="font-size: 18px; color: var(--primary);">📈</span>
+        <span class="app-title">crypto-alert</span>
+        <div class="fg-badge" id="fgBadge" onclick="toggleForeground()">24h 감시중</div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" onclick="openSettings()" title="설정">⚙️</button>
+      </div>
+    </header>
+
+    <!-- 토스트 알림 팝업 -->
+    <div class="toast-popup" id="toastPopup">
+      <div class="toast-icon">🔔</div>
+      <div class="toast-text">
+        <div class="toast-title" id="toastTitle">알림 발동</div>
+        <div id="toastMessage">목표가 도달</div>
+      </div>
+    </div>
+
+    <!-- 메인 컨텐츠 영역 -->
+    <main class="view-content">
+
+      <!-- 1. 차트 탭 -->
+      <section class="tab-view active" id="tabChart">
+        <div class="chart-controls">
+          <div class="selector-row">
+            <select id="selExchange" onchange="changeExchange()">
+              <option value="upbit">업비트 (원화)</option>
+              <option value="binance">바이낸스 (USDT)</option>
+              <option value="okx">OKX (현물)</option>
+            </select>
+            <select id="selSymbol" onchange="changeSymbol()" style="flex: 1;">
+              <option value="BTC/KRW">BTC/KRW (비트코인)</option>
+            </select>
+            <button class="pill-btn" onclick="fetchCandles()">🔄</button>
+          </div>
+
+          <div class="price-summary">
+            <div>
+              <span class="current-price" id="currPrice">...</span>
+              <span class="price-change" id="currChg">...</span>
+            </div>
+            <div class="volume-text" id="currVol">24h 거래량: -</div>
+          </div>
+
+          <div class="interval-bar">
+            <div class="interval-group">
+              <button class="pill-btn active" onclick="changeInterval('15m', this)">15분</button>
+              <button class="pill-btn" onclick="changeInterval('4h', this)">4시간</button>
+              <button class="pill-btn" onclick="changeInterval('1d', this)">1일</button>
+              <button class="pill-btn" onclick="changeInterval('1w', this)">1주</button>
+              <button class="pill-btn" onclick="changeInterval('1M', this)">1월</button>
+            </div>
+            <div class="indicator-group">
+              <button class="pill-btn active" id="btnMa" onclick="toggleInd('ma')">MA</button>
+              <button class="pill-btn active" id="btnBb" onclick="toggleInd('bb')">BB</button>
+              <button class="pill-btn" id="btnRsi" onclick="toggleInd('rsi')">RSI</button>
+              <button class="pill-btn" id="btnMacd" onclick="toggleInd('macd')">MACD</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-canvas-container" id="chartCanvasContainer">
+          <canvas id="candleCanvas"></canvas>
+        </div>
+      </section>
+
+      <!-- 2. 알림 규칙 탭 -->
+      <section class="tab-view" id="tabRules">
+        <div class="rules-header">
+          <button class="subtab-btn active" onclick="switchRulesSubtab(0, this)">감시 규칙 (<span id="ruleCount">0</span>)</button>
+          <button class="subtab-btn" onclick="switchRulesSubtab(1, this)">발동 이력 (<span id="histCount">0</span>)</button>
+        </div>
+        <div class="rules-list" id="rulesList">
+          <!-- 규칙 카드들이 동적 생성됩니다 -->
+        </div>
+        <button class="fab" onclick="openAddRule()">+</button>
+      </section>
+
+      <!-- 3. 보유종목 탭 -->
+      <section class="tab-view" id="tabHoldings">
+        <div class="portfolio-hero">
+          <div class="hero-label">총 평가금액</div>
+          <div class="hero-val" id="totalValuation">₩ 0</div>
+          <div class="hero-pnl" id="totalPnl">총 손익: ₩ 0 (0.00%)</div>
+        </div>
+        <div class="rules-list" id="holdingsList">
+          <!-- 보유종목 카드 동적 렌더링 -->
+        </div>
+        <button class="fab" onclick="openAddHolding()">+</button>
+      </section>
+
+      <!-- 4. 시가총액 탭 -->
+      <section class="tab-view" id="tabMarketCap">
+        <div class="rank-list" id="marketCapList">
+          <!-- 시총 순위 동적 렌더링 -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- 하단 탭바 -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" onclick="switchTab(0, this)">
+        <span class="nav-icon">📊</span>
+        <span>차트·시세</span>
+      </button>
+      <button class="nav-item" onclick="switchTab(1, this)">
+        <span class="nav-icon">🔔</span>
+        <span>알림 규칙</span>
+      </button>
+      <button class="nav-item" onclick="switchTab(2, this)">
+        <span class="nav-icon">💼</span>
+        <span>보유종목</span>
+      </button>
+      <button class="nav-item" onclick="switchTab(3, this)">
+        <span class="nav-icon">🏆</span>
+        <span>시총 순위</span>
+      </button>
+    </nav>
+
+    <!-- 규칙 추가 모달 -->
+    <div class="modal-overlay" id="ruleModal">
+      <div class="modal-sheet">
+        <div class="modal-title">새 알림 규칙 추가</div>
+        <div class="form-group">
+          <label>거래소</label>
+          <select id="modalExchange" onchange="updateModalSymbols()">
+            <option value="upbit">업비트</option>
+            <option value="binance">바이낸스</option>
+            <option value="okx">OKX</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>종목</label>
+          <select id="modalSymbol"></select>
+        </div>
+        <div class="form-group">
+          <label>알림 조건</label>
+          <select id="modalCond" onchange="toggleModalParamFields()">
+            <option value="price_above">가격 ≥ 목표가</option>
+            <option value="price_below">가격 ≤ 목표가</option>
+            <option value="golden_cross">골든크로스 (단기 MA > 장기 MA)</option>
+            <option value="dead_cross">데드크로스 (단기 MA < 장기 MA)</option>
+            <option value="rsi_overbought">RSI 과매수 (≥ 70)</option>
+            <option value="rsi_oversold">RSI 과매도 (≤ 30)</option>
+            <option value="macd_bullish">MACD 상향 골든크로스</option>
+            <option value="bb_breakout_up">볼린저 밴드 상단 돌파</option>
+          </select>
+        </div>
+        <div class="form-group" id="grpTargetPrice">
+          <label>목표 가격</label>
+          <input type="number" id="modalTarget" placeholder="예: 100000000">
+        </div>
+        <div class="form-group">
+          <label>재알림 쿨다운 (분)</label>
+          <input type="number" id="modalCooldown" value="30">
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: 8px;">
+          <button class="pill-btn" style="flex: 1; padding: 10px;" onclick="closeModal('ruleModal')">취소</button>
+          <button class="btn-primary" style="flex: 2;" onclick="saveNewRule()">규칙 저장</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 보유종목 추가 모달 -->
+    <div class="modal-overlay" id="holdingModal">
+      <div class="modal-sheet">
+        <div class="modal-title">보유 종목 입력</div>
+        <div class="form-group">
+          <label>심볼 (예: BTC/KRW)</label>
+          <input type="text" id="holdSymbol" value="BTC/KRW">
+        </div>
+        <div class="form-group">
+          <label>보유 수량</label>
+          <input type="number" step="any" id="holdQty" placeholder="예: 0.25">
+        </div>
+        <div class="form-group">
+          <label>매수 평균단가</label>
+          <input type="number" step="any" id="holdPrice" placeholder="예: 95000000">
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: 8px;">
+          <button class="pill-btn" style="flex: 1; padding: 10px;" onclick="closeModal('holdingModal')">취소</button>
+          <button class="btn-primary" style="flex: 2;" onclick="saveNewHolding()">저장</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 발송 설정 모달 -->
+    <div class="modal-overlay" id="settingsModal">
+      <div class="modal-sheet">
+        <div class="modal-title">알림 발송 설정</div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span>팝업 알림</span>
+          <label class="toggle-switch"><input type="checkbox" id="setPopup" checked><span class="slider"></span></label>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span>사운드 비프음</span>
+          <label class="toggle-switch"><input type="checkbox" id="setSound" checked><span class="slider"></span></label>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span>텔레그램 발송</span>
+          <label class="toggle-switch"><input type="checkbox" id="setTele"><span class="slider"></span></label>
+        </div>
+        <div class="form-group">
+          <label>텔레그램 봇 토큰</label>
+          <input type="text" id="setToken" placeholder="123456:ABC-DEF...">
+        </div>
+        <div class="form-group">
+          <label>Chat ID</label>
+          <input type="text" id="setChatId" placeholder="12345678">
+        </div>
+        <button class="pill-btn" style="padding: 8px; margin-top: 4px;" onclick="testTelegram()">텔레그램 테스트 발송</button>
+        <div style="display: flex; gap: 8px; margin-top: 8px;">
+          <button class="pill-btn" style="flex: 1; padding: 10px;" onclick="closeModal('settingsModal')">닫기</button>
+          <button class="btn-primary" style="flex: 2;" onclick="saveSettings()">설정 저장</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // --- 1. 전역 상태 및 데이터 ---
+    const WATCHLIST = {
+      upbit: ["BTC", "ETH", "XRP", "XLM", "ADA", "WLD", "SOL", "SUI", "SHIB", "DOGE"],
+      binance: ["BTC/USDT", "ETH/USDT", "SOL/USDT", "XRP/USDT", "XLM/USDT", "WLD/USDT"],
+      okx: ["PI/USDT"]
+    };
+
+    const SUPPLIES = {
+      "BTC": 19950000, "ETH": 120700000, "XRP": 60000000000, "SOL": 545000000,
+      "ADA": 35900000000, "WLD": 2500000000, "SUI": 3600000000, "SHIB": 589000000000000
+    };
+
+    let state = {
+      exchange: 'upbit',
+      symbol: 'BTC/KRW',
+      interval: '15m',
+      candles: [],
+      indicators: { ma: true, bb: true, rsi: false, macd: false },
+      tickers: {},
+      rules: JSON.parse(localStorage.getItem('rules') || '[]'),
+      history: JSON.parse(localStorage.getItem('history') || '[]'),
+      holdings: JSON.parse(localStorage.getItem('holdings') || '[{"symbol":"BTC/KRW","quantity":0.15,"avgPrice":98000000}]'),
+      settings: JSON.parse(localStorage.getItem('settings') || '{"popup":true,"sound":true,"tele":false,"token":"","chatId":""}'),
+      ws: null
+    };
+
+    // --- 2. 시계 및 초기화 ---
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').innerText = now.toTimeString().substring(0, 5);
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    window.addEventListener('DOMContentLoaded', () => {
+      populateSymbols();
+      fetchCandles();
+      connectWebSocket();
+      renderRules();
+      renderHoldings();
+      renderMarketCap();
+      setupCanvas();
+    });
+
+    // --- 3. 거래소 심볼 갱신 ---
+    function populateSymbols() {
+      const sel = document.getElementById('selSymbol');
+      sel.innerHTML = '';
+      const list = WATCHLIST[state.exchange] || [];
+      list.forEach(s => {
+        const full = state.exchange === 'upbit' ? `${s}/KRW` : s;
+        const opt = document.createElement('option');
+        opt.value = full;
+        opt.innerText = full;
+        sel.appendChild(opt);
+      });
+      state.symbol = sel.value;
+    }
+
+    function changeExchange() {
+      state.exchange = document.getElementById('selExchange').value;
+      populateSymbols();
+      fetchCandles();
+      connectWebSocket();
+    }
+
+    function changeSymbol() {
+      state.symbol = document.getElementById('selSymbol').value;
+      fetchCandles();
+    }
+
+    function changeInterval(inv, btn) {
+      state.interval = inv;
+      document.querySelectorAll('.interval-group .pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      fetchCandles();
+    }
+
+    function toggleInd(ind) {
+      state.indicators[ind] = !state.indicators[ind];
+      document.getElementById(`btn${ind.charAt(0).toUpperCase() + ind.slice(1)}`).classList.toggle('active', state.indicators[ind]);
+      drawChart();
+    }
+
+    // --- 4. 시세 수신 (REST 캔들 & 실시간 웹소켓) ---
+    async function fetchCandles() {
+      try {
+        let candles = [];
+        if (state.exchange === 'upbit') {
+          const sym = state.symbol.replace('/KRW', '');
+          let path = 'minutes/15';
+          if (state.interval === '4h') path = 'minutes/240';
+          else if (state.interval === '1d') path = 'days?count=100';
+          else if (state.interval === '1w') path = 'days?unit=7&count=100';
+          else if (state.interval === '1M') path = 'days?unit=30&count=100';
+          else path = 'minutes/15?count=100';
+
+          const res = await fetch(`https://api.upbit.com/v1/candles/${path}&market=KRW-${sym}`);
+          const data = await res.json();
+          candles = data.map(d => ({
+            time: new Date(d.candle_date_time_utc),
+            open: d.opening_price,
+            high: d.high_price,
+            low: d.low_price,
+            close: d.trade_price,
+            volume: d.candle_acc_trade_volume
+          })).reverse();
+        } else if (state.exchange === 'binance') {
+          const bSym = state.symbol.replace('/', '');
+          const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${bSym}&interval=${state.interval}&limit=100`);
+          const data = await res.json();
+          candles = data.map(d => ({
+            time: new Date(d[0]),
+            open: parseFloat(d[1]),
+            high: parseFloat(d[2]),
+            low: parseFloat(d[3]),
+            close: parseFloat(d[4]),
+            volume: parseFloat(d[5])
+          }));
+        } else if (state.exchange === 'okx') {
+          const instId = state.symbol.replace('/', '-');
+          const res = await fetch(`https://www.okx.com/api/v5/market/candles?instId=${instId}&bar=${state.interval}&limit=100`);
+          const json = await res.json();
+          candles = (json.data || []).map(d => ({
+            time: new Date(parseInt(d[0])),
+            open: parseFloat(d[1]),
+            high: parseFloat(d[2]),
+            low: parseFloat(d[3]),
+            close: parseFloat(d[4]),
+            volume: parseFloat(d[5])
+          })).reverse();
+        }
+
+        state.candles = candles;
+        if (candles.length > 0) {
+          const last = candles[candles.length - 1];
+          updateHeaderPrice(last.close, (last.close - candles[0].close) / candles[0].close, last.volume);
+        }
+        drawChart();
+      } catch (e) {
+        console.error('캔들 조회 오류:', e);
+      }
+    }
+
+    function updateHeaderPrice(price, changeRate, vol) {
+      const pEl = document.getElementById('currPrice');
+      const cEl = document.getElementById('currChg');
+      const vEl = document.getElementById('currVol');
+
+      pEl.innerText = price >= 100 ? price.toLocaleString('ko-KR') : price.toFixed(4);
+      const isUp = changeRate >= 0;
+      pEl.style.color = isUp ? 'var(--up)' : 'var(--down)';
+
+      cEl.innerText = `${isUp ? '+' : ''}${(changeRate * 100).toFixed(2)}%`;
+      cEl.style.color = isUp ? 'var(--up)' : 'var(--down)';
+
+      vEl.innerText = `24h 거래량: ${vol ? vol.toLocaleString('ko-KR', {maximumFractionDigits: 1}) : '-'}`;
+
+      // 알림 조건 평가
+      evaluateRules(price);
+    }
+
+    function connectWebSocket() {
+      if (state.ws) state.ws.close();
+
+      if (state.exchange === 'upbit') {
+        const codes = (WATCHLIST.upbit || []).map(c => `KRW-${c}`);
+        state.ws = new WebSocket('wss://api.upbit.com/websocket/v1');
+        state.ws.onopen = () => {
+          state.ws.send(JSON.stringify([{ticket: "web-mobile"}, {type: "ticker", codes: codes}]));
+        };
+        state.ws.onmessage = async (e) => {
+          let text = typeof e.data === 'string' ? e.data : await e.data.text();
+          try {
+            const d = JSON.parse(text);
+            const sym = `${d.code.replace('KRW-', '')}/KRW`;
+            state.tickers[`upbit:${sym}`] = { price: d.trade_price, change: d.change_rate, vol: d.acc_trade_volume_24h };
+            if (state.symbol === sym) {
+              updateHeaderPrice(d.trade_price, d.change_rate, d.acc_trade_volume_24h);
+              if (state.candles.length > 0) {
+                const last = state.candles[state.candles.length - 1];
+                last.close = d.trade_price;
+                last.high = Math.max(last.high, d.trade_price);
+                last.low = Math.min(last.low, d.trade_price);
+                drawChart();
+              }
+            }
+          } catch (_) {}
+        };
+      } else if (state.exchange === 'binance') {
+        const streams = (WATCHLIST.binance || []).map(s => `${s.replace('/', '').toLowerCase()}@ticker`).join('/');
+        state.ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
+        state.ws.onmessage = (e) => {
+          const json = JSON.parse(e.data);
+          const d = json.data;
+          if (d && d.s) {
+            const sym = d.s.replace('USDT', '/USDT');
+            const price = parseFloat(d.c);
+            const chg = parseFloat(d.P) / 100;
+            state.tickers[`binance:${sym}`] = { price: price, change: chg, vol: parseFloat(d.v) };
+            if (state.symbol === sym) {
+              updateHeaderPrice(price, chg, parseFloat(d.v));
+              if (state.candles.length > 0) {
+                const last = state.candles[state.candles.length - 1];
+                last.close = price;
+                last.high = Math.max(last.high, price);
+                last.low = Math.min(last.low, price);
+                drawChart();
+              }
+            }
+          }
+        };
+      }
+    }
+
+    // --- 5. 캔들 차트 및 지표 Canvas 렌더링 ---
+    function setupCanvas() {
+      const container = document.getElementById('chartCanvasContainer');
+      const canvas = document.getElementById('candleCanvas');
+      function resize() {
+        canvas.width = container.clientWidth * window.devicePixelRatio;
+        canvas.height = container.clientHeight * window.devicePixelRatio;
+        drawChart();
+      }
+      window.addEventListener('resize', resize);
+      resize();
+    }
+
+    function drawChart() {
+      const canvas = document.getElementById('candleCanvas');
+      if (!canvas || !state.candles.length) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      const dpr = window.devicePixelRatio || 1;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // 서브패널 높이 분배
+      let subPanels = (state.indicators.rsi ? 1 : 0) + (state.indicators.macd ? 1 : 0);
+      let subHeight = subPanels > 0 ? (h * 0.18) : 0;
+      let volHeight = h * 0.12;
+      let mainHeight = h - (subHeight * subPanels) - volHeight;
+
+      const candles = state.candles;
+      const barWidth = Math.max(4 * dpr, w / candles.length);
+
+      let maxP = Math.max(...candles.map(c => c.high));
+      let minP = Math.min(...candles.map(c => c.low));
+      let maxV = Math.max(...candles.map(c => c.volume)) || 1;
+
+      const padding = (maxP - minP) * 0.05 || 1;
+      maxP += padding; minP -= padding;
+
+      const getY = p => mainHeight - ((p - minP) / (maxP - minP) * mainHeight);
+
+      // 배경 그리드
+      ctx.strokeStyle = '#232733';
+      ctx.lineWidth = 1 * dpr;
+      for (let i = 1; i <= 4; i++) {
+        let y = (mainHeight / 5) * i;
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      }
+
+      // 캔들 및 거래량 렌더링
+      candles.forEach((c, i) => {
+        const x = i * barWidth;
+        const isUp = c.close >= c.open;
+        const color = isUp ? '#c84a31' : '#1261c4';
+
+        // 심지
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.2 * dpr;
+        ctx.beginPath();
+        ctx.moveTo(x + barWidth / 2, getY(c.high));
+        ctx.lineTo(x + barWidth / 2, getY(c.low));
+        ctx.stroke();
+
+        // 몸통
+        ctx.fillStyle = color;
+        const openY = getY(c.open);
+        const closeY = getY(c.close);
+        const topY = Math.min(openY, closeY);
+        const bodyH = Math.max(2 * dpr, Math.abs(openY - closeY));
+        ctx.fillRect(x + 1 * dpr, topY, Math.max(1, barWidth - 2 * dpr), bodyH);
+
+        // 거래량 바
+        ctx.fillStyle = isUp ? 'rgba(200, 74, 49, 0.4)' : 'rgba(18, 97, 196, 0.4)';
+        const vH = (c.volume / maxV) * volHeight;
+        ctx.fillRect(x + 1 * dpr, mainHeight + volHeight - vH, Math.max(1, barWidth - 2 * dpr), vH);
+      });
+
+      // 주기별 MA 선 그리기 (8, 96, 192 등)
+      if (state.indicators.ma) {
+        let periods = state.interval === '15m' ? [8, 96, 192] : [60, 120, 200];
+        let colors = ['#ff9800', '#2196f3', '#9c27b0'];
+        periods.forEach((p, idx) => {
+          const ma = calcSMA(candles.map(c => c.close), p);
+          drawCurve(ctx, ma, colors[idx], getY, barWidth, dpr);
+        });
+      }
+
+      // 볼린저 밴드 (20주기, 2σ, 중심선 점선)
+      if (state.indicators.bb) {
+        const bb = calcBollinger(candles.map(c => c.close), 20, 2);
+        drawCurve(ctx, bb.upper, 'rgba(0, 188, 212, 0.8)', getY, barWidth, dpr);
+        drawCurve(ctx, bb.lower, 'rgba(0, 188, 212, 0.8)', getY, barWidth, dpr);
+        // 중심선 점선
+        ctx.setLineDash([4 * dpr, 4 * dpr]);
+        drawCurve(ctx, bb.middle, 'rgba(0, 188, 212, 0.9)', getY, barWidth, dpr);
+        ctx.setLineDash([]);
+      }
+    }
+
+    function calcSMA(vals, p) {
+      let res = [];
+      for (let i = 0; i < vals.length; i++) {
+        if (i < p - 1) res.push(NaN);
+        else {
+          let sum = 0;
+          for (let j = i - p + 1; j <= i; j++) sum += vals[j];
+          res.push(sum / p);
+        }
+      }
+      return res;
+    }
+
+    function calcBollinger(vals, p, mult) {
+      const sma = calcSMA(vals, p);
+      let upper = [], lower = [];
+      for (let i = 0; i < vals.length; i++) {
+        if (isNaN(sma[i])) { upper.push(NaN); lower.push(NaN); }
+        else {
+          let varSum = 0;
+          for (let j = i - p + 1; j <= i; j++) varSum += Math.pow(vals[j] - sma[i], 2);
+          let std = Math.sqrt(varSum / p);
+          upper.push(sma[i] + mult * std);
+          lower.push(sma[i] - mult * std);
+        }
+      }
+      return { middle: sma, upper, lower };
+    }
+
+    function drawCurve(ctx, arr, color, getY, barWidth, dpr) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5 * dpr;
+      ctx.beginPath();
+      let started = false;
+      arr.forEach((val, i) => {
+        if (!isNaN(val)) {
+          const x = i * barWidth + barWidth / 2;
+          const y = getY(val);
+          if (!started) { ctx.moveTo(x, y); started = true; }
+          else ctx.lineTo(x, y);
+        }
+      });
+      ctx.stroke();
+    }
+
+    // --- 6. 알림 엔진 및 트리거 ---
+    function evaluateRules(currentPrice) {
+      const now = new Date();
+      state.rules.forEach(r => {
+        if (!r.enabled) return;
+        if (r.symbol !== state.symbol) return;
+
+        let triggered = false;
+        let msg = '';
+        if (r.condition === 'price_above') {
+          triggered = currentPrice >= r.target;
+          msg = `현재가 ${currentPrice.toLocaleString()} (목표가 ${r.target.toLocaleString()} 돌파)`;
+        } else if (r.condition === 'price_below') {
+          triggered = currentPrice <= r.target;
+          msg = `현재가 ${currentPrice.toLocaleString()} (목표가 ${r.target.toLocaleString()} 이탈)`;
+        }
+
+        // 엣지 감지 (false -> true)
+        if (triggered && !r.lastState) {
+          const coolMs = (r.cooldown || 30) * 60 * 1000;
+          if (!r.lastTime || (now - new Date(r.lastTime)) > coolMs) {
+            r.lastTime = now.toISOString();
+            fireAlert(r, msg);
+          }
+        }
+        r.lastState = triggered;
+      });
+      localStorage.setItem('rules', JSON.stringify(state.rules));
+    }
+
+    function fireAlert(rule, message) {
+      // 1. 소리 비프음 합성 (Web Audio API)
+      if (state.settings.sound) {
+        try {
+          const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 tone
+          gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.3);
+        } catch (_) {}
+      }
+
+      // 2. 화면 상단 토스트 팝업
+      if (state.settings.popup) {
+        const popup = document.getElementById('toastPopup');
+        document.getElementById('toastTitle').innerText = `[${rule.exchange.toUpperCase()}] ${rule.symbol} 알림`;
+        document.getElementById('toastMessage').innerText = message;
+        popup.classList.add('show');
+        setTimeout(() => popup.classList.remove('show'), 5000);
+      }
+
+      // 3. 이력 추가
+      state.history.unshift({
+        symbol: rule.symbol,
+        exchange: rule.exchange,
+        message: message,
+        time: new Date().toLocaleTimeString()
+      });
+      if (state.history.length > 50) state.history.pop();
+      localStorage.setItem('history', JSON.stringify(state.history));
+      renderRules();
+
+      // 4. 텔레그램 발송
+      if (state.settings.tele && state.settings.token && state.settings.chatId) {
+        fetch(`https://api.telegram.org/bot${state.settings.token}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: state.settings.chatId,
+            text: `[crypto-alert] ${rule.symbol}\n${message}`
+          })
+        }).catch(console.error);
+      }
+    }
+
+    // --- 7. 규칙 및 이력 탭 렌더링 ---
+    function renderRules() {
+      const list = document.getElementById('rulesList');
+      document.getElementById('ruleCount').innerText = state.rules.length;
+      document.getElementById('histCount').innerText = state.history.length;
+
+      list.innerHTML = '';
+      if (state.rules.length === 0) {
+        list.innerHTML = '<div style="text-align:center; padding: 40px; color: var(--text-muted);">등록된 감시 규칙이 없습니다.<br>우하단 + 버튼을 눌러 추가하세요.</div>';
+        return;
+      }
+
+      state.rules.forEach((r, idx) => {
+        const card = document.createElement('div');
+        card.className = 'rule-card';
+        card.innerHTML = `
+          <div class="rule-info">
+            <div><span class="rule-badge">${r.exchange.toUpperCase()}</span><span class="rule-symbol">${r.symbol}</span></div>
+            <div class="rule-cond">${r.condition === 'price_above' ? '가격 ≥ 목표' : (r.condition === 'price_below' ? '가격 ≤ 목표' : r.condition)}</div>
+            <div class="rule-desc">목표: ${r.target ? r.target.toLocaleString() : '-'} (쿨다운: ${r.cooldown}분)</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" ${r.enabled ? 'checked' : ''} onchange="toggleRule(${idx})">
+            <span class="slider"></span>
+          </label>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    function toggleRule(idx) {
+      state.rules[idx].enabled = !state.rules[idx].enabled;
+      localStorage.setItem('rules', JSON.stringify(state.rules));
+      renderRules();
+    }
+
+    // --- 8. 보유종목 탭 렌더링 ---
+    function renderHoldings() {
+      const list = document.getElementById('holdingsList');
+      list.innerHTML = '';
+
+      let totalVal = 0;
+      let totalCost = 0;
+
+      state.holdings.forEach((h, idx) => {
+        let curP = h.avgPrice;
+        let t = state.tickers[`upbit:${h.symbol}`] || state.tickers[`binance:${h.symbol}`];
+        if (t && t.price) curP = t.price;
+
+        const val = h.quantity * curP;
+        const cost = h.quantity * h.avgPrice;
+        const pnl = val - cost;
+        const rate = (pnl / cost) * 100;
+
+        totalVal += val;
+        totalCost += cost;
+
+        const isUp = pnl >= 0;
+        const card = document.createElement('div');
+        card.className = 'rule-card';
+        card.innerHTML = `
+          <div class="rule-info">
+            <div class="rule-symbol">${h.symbol}</div>
+            <div class="rule-desc">수량: ${h.quantity} | 평단: ₩${h.avgPrice.toLocaleString()}</div>
+            <div class="rule-desc" style="color: #fff;">현재가: ₩${curP.toLocaleString()}</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 15px; font-weight: 700;">₩${Math.round(val).toLocaleString()}</div>
+            <div style="font-size: 12px; font-weight: 600; color: ${isUp ? 'var(--up)' : 'var(--down)'};">${isUp ? '+' : ''}${rate.toFixed(2)}%</div>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+
+      const totalPnl = totalVal - totalCost;
+      const totalRate = totalCost > 0 ? (totalPnl / totalCost) * 100 : 0;
+      const isUpTotal = totalPnl >= 0;
+
+      document.getElementById('totalValuation').innerText = `₩ ${Math.round(totalVal).toLocaleString()}`;
+      const pnlEl = document.getElementById('totalPnl');
+      pnlEl.innerText = `총 손익: ${isUpTotal ? '+' : ''}₩${Math.round(totalPnl).toLocaleString()} (${isUpTotal ? '+' : ''}${totalRate.toFixed(2)}%)`;
+      pnlEl.style.color = isUpTotal ? 'var(--up)' : 'var(--down)';
+    }
+
+    // --- 9. 시가총액 탭 렌더링 ---
+    function renderMarketCap() {
+      const list = document.getElementById('marketCapList');
+      list.innerHTML = '';
+
+      let ranks = [];
+      for (const [base, supply] of Object.entries(SUPPLIES)) {
+        let priceUsd = base === 'BTC' ? 95000 : (base === 'ETH' ? 3400 : (base === 'SOL' ? 180 : 0.6));
+        let change = 0.02;
+
+        let t = state.tickers[`binance:${base}/USDT`];
+        if (t && t.price) { priceUsd = t.price; change = t.change; }
+
+        ranks.push({ base, priceUsd, capUsd: supply * priceUsd, change });
+      }
+
+      ranks.sort((a, b) => b.capUsd - a.capUsd);
+
+      ranks.forEach((r, idx) => {
+        const isUp = r.change >= 0;
+        const item = document.createElement('div');
+        item.className = 'rank-item';
+        item.innerHTML = `
+          <div class="rank-num ${idx < 3 ? 'rank-top' : ''}">${idx + 1}</div>
+          <div class="rank-info">
+            <div class="rank-sym">${r.base}</div>
+            <div class="rank-cap">시총: $${(r.capUsd / 1e9).toFixed(2)}B</div>
+          </div>
+          <div class="rank-price-col">
+            <div class="rank-price">$${r.priceUsd.toLocaleString()}</div>
+            <div class="rank-chg" style="color: ${isUp ? 'var(--up)' : 'var(--down)'};">${isUp ? '+' : ''}${(r.change * 100).toFixed(2)}%</div>
+          </div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    // --- 10. 모달 및 네비게이션 ---
+    function switchTab(idx, btn) {
+      document.querySelectorAll('.bottom-nav .nav-item').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      document.querySelectorAll('.tab-view').forEach((v, i) => {
+        v.classList.toggle('active', i === idx);
+      });
+
+      if (idx === 0) drawChart();
+      if (idx === 2) renderHoldings();
+      if (idx === 3) renderMarketCap();
+    }
+
+    function switchRulesSubtab(idx, btn) {
+      document.querySelectorAll('.rules-header .subtab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const list = document.getElementById('rulesList');
+      list.innerHTML = '';
+      if (idx === 0) renderRules();
+      else {
+        if (state.history.length === 0) {
+          list.innerHTML = '<div style="text-align:center; padding: 40px; color: var(--text-muted);">발동된 알림 이력이 없습니다.</div>';
+          return;
+        }
+        state.history.forEach(h => {
+          const card = document.createElement('div');
+          card.className = 'rule-card';
+          card.innerHTML = `
+            <div class="rule-info">
+              <div><span class="rule-badge">${h.exchange.toUpperCase()}</span><span class="rule-symbol">${h.symbol}</span></div>
+              <div class="rule-cond">${h.message}</div>
+              <div class="rule-desc">${h.time}</div>
+            </div>
+          `;
+          list.appendChild(card);
+        });
+      }
+    }
+
+    function openAddRule() {
+      document.getElementById('ruleModal').style.display = 'flex';
+      updateModalSymbols();
+    }
+
+    function updateModalSymbols() {
+      const ex = document.getElementById('modalExchange').value;
+      const sel = document.getElementById('modalSymbol');
+      sel.innerHTML = '';
+      (WATCHLIST[ex] || []).forEach(s => {
+        const full = ex === 'upbit' ? `${s}/KRW` : s;
+        const opt = document.createElement('option');
+        opt.value = full; opt.innerText = full;
+        sel.appendChild(opt);
+      });
+    }
+
+    function toggleModalParamFields() {
+      const cond = document.getElementById('modalCond').value;
+      const grp = document.getElementById('grpTargetPrice');
+      grp.style.display = (cond === 'price_above' || cond === 'price_below') ? 'flex' : 'none';
+    }
+
+    function saveNewRule() {
+      const ex = document.getElementById('modalExchange').value;
+      const sym = document.getElementById('modalSymbol').value;
+      const cond = document.getElementById('modalCond').value;
+      const target = parseFloat(document.getElementById('modalTarget').value) || 0;
+      const cooldown = parseInt(document.getElementById('modalCooldown').value) || 30;
+
+      state.rules.push({
+        id: Date.now().toString(),
+        exchange: ex,
+        symbol: sym,
+        condition: cond,
+        target: target,
+        cooldown: cooldown,
+        enabled: true
+      });
+      localStorage.setItem('rules', JSON.stringify(state.rules));
+      closeModal('ruleModal');
+      renderRules();
+    }
+
+    function openAddHolding() {
+      document.getElementById('holdingModal').style.display = 'flex';
+    }
+
+    function saveNewHolding() {
+      const sym = document.getElementById('holdSymbol').value.trim();
+      const qty = parseFloat(document.getElementById('holdQty').value) || 0;
+      const price = parseFloat(document.getElementById('holdPrice').value) || 0;
+      if (qty > 0 && price > 0) {
+        state.holdings.push({ symbol: sym, quantity: qty, avgPrice: price });
+        localStorage.setItem('holdings', JSON.stringify(state.holdings));
+        closeModal('holdingModal');
+        renderHoldings();
+      }
+    }
+
+    function openSettings() {
+      document.getElementById('setPopup').checked = state.settings.popup;
+      document.getElementById('setSound').checked = state.settings.sound;
+      document.getElementById('setTele').checked = state.settings.tele;
+      document.getElementById('setToken').value = state.settings.token || '';
+      document.getElementById('setChatId').value = state.settings.chatId || '';
+      document.getElementById('settingsModal').style.display = 'flex';
+    }
+
+    function saveSettings() {
+      state.settings.popup = document.getElementById('setPopup').checked;
+      state.settings.sound = document.getElementById('setSound').checked;
+      state.settings.tele = document.getElementById('setTele').checked;
+      state.settings.token = document.getElementById('setToken').value.trim();
+      state.settings.chatId = document.getElementById('setChatId').value.trim();
+      localStorage.setItem('settings', JSON.stringify(state.settings));
+      closeModal('settingsModal');
+    }
+
+    function testTelegram() {
+      const token = document.getElementById('setToken').value.trim();
+      const chatId = document.getElementById('setChatId').value.trim();
+      if (!token || !chatId) {
+        alert('토큰과 Chat ID를 모두 입력해주세요.');
+        return;
+      }
+      fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: `[crypto-alert] 모바일 테스트 알림 발송 성공!\n현재 시각: ${new Date().toLocaleString()}`
+        })
+      }).then(res => {
+        if (res.ok) alert('텔레그램 메시지 발송에 성공했습니다!');
+        else alert('텔레그램 발송 실패 (토큰과 Chat ID를 다시 확인해주세요)');
+      }).catch(err => alert(`에러 발생: ${err.message}`));
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+
+    function toggleForeground() {
+      const b = document.getElementById('fgBadge');
+      if (b.innerText.includes('감시중')) {
+        b.innerText = '백그라운드 OFF';
+        b.style.borderColor = '#787b86';
+        b.style.color = '#787b86';
+        b.style.background = 'rgba(120, 123, 134, 0.15)';
+      } else {
+        b.innerText = '24h 감시중';
+        b.style.borderColor = '#27ae60';
+        b.style.color = '#2ecc71';
+        b.style.background = 'rgba(39, 174, 96, 0.15)';
+      }
+    }
+  </script>
+</body>
+</html>
